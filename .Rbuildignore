@@ -1,0 +1,11 @@
+^\.travis\.yml$
+LICENSE
+README.md
+.gitignore
+.rhistory
+.gitattribute
+.vs
+.git
+.rproj
+.rxproj
+.sln
