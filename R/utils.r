@@ -1,6 +1,6 @@
 #' Extensions to arcpyr
 #'
-#' Extends the funcitonality of \code{arcpyr}. Provides some additional
+#' Extends the functionality of \code{arcpyr}. Provides some additional
 #' interfaces to working with arcpy from R, including support for
 #' raster calculations and reading attribute tables.
 #'
