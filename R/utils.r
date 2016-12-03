@@ -29,7 +29,7 @@ RasterCalculator = function(expressions, inrasters = list(), outrasters = list()
     stop("extension 'Spatial' is not available.", call. = FALSE)
   if(length(capture.output(try(PythonInR::pyExecp('import arcpy.sa'), silent = TRUE))) > 0)
     stop("Could not import arcpy.sa.")
-  load_exprs = sprintf('%s = Raster("%s")', names(inrasters), inrasters)
+  load_exprs = sprintf('%s = arcpy.sa.Raster("%s")', names(inrasters), inrasters)
   save_exprs = sprintf('%s.save("%s")', names(outrasters), outrasters)
   # load the input rasters
   for(e in load_exprs)
