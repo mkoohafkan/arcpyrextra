@@ -2,6 +2,5 @@
 
 export(RasterCalculator)
 export(get_attrtable)
-import(arcpyr)
 importFrom(stats,setNames)
 importFrom(utils,capture.output)
