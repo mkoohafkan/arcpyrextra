@@ -7,7 +7,6 @@
 #' @name arcpyrextra-package
 #' @aliases arcpyrextra
 #' @docType package
-#' @import arcpyr
 NULL
 
 #'Raster Calculations with arcpy.sa
@@ -32,9 +31,15 @@ RasterCalculator = function(expressions, inrasters = list(), outrasters = list()
     stop("Could not import arcpy.sa.")
   load_exprs = sprintf('%s = Raster("%s")', names(inrasters), inrasters)
   save_exprs = sprintf('%s.save("%s")', names(outrasters), outrasters)
-  lapply(load_exprs, PythonInR::pyExec)
-  lapply(expressions, PythonInR::pyExec)
-  lapply(save_exprs, PythonInR::pyExec)
+  # load the input rasters
+  for(e in load_exprs)
+    PythonInR::pyExec(e)
+  # evaluate the intermediate calculations
+  for(e in expressions)
+    PythonInR::pyExec(e)
+  # save the ouput rasters
+  for(e in save_exprs)
+    PythonInR::pyExec(e)  
   invisible(NULL)
 }
 
