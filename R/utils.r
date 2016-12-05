@@ -22,6 +22,13 @@ NULL
 #' @return No return value; raster files listed in \code{outrasters} 
 #'   will be saved.
 #'
+#' @details Note that the functions exposes the \code{arcpy.sa} 
+#'   namespace, rather than importing all function from 
+#'   \code{arcpy.sa} into the global environment. Therefore, 
+#'   calls to \code{arcpy.sa} functions in the \code{expressions} 
+#'   argument must include the namespace, e.g. \code{arcpy.sa.Log10} 
+#'   rather than simply \code{Log10}.
+#'
 #' @importFrom utils capture.output
 #' @export
 RasterCalculator = function(expressions, inrasters = list(), outrasters = list()) {
@@ -31,15 +38,9 @@ RasterCalculator = function(expressions, inrasters = list(), outrasters = list()
     stop("Could not import arcpy.sa.")
   load_exprs = sprintf('%s = arcpy.sa.Raster("%s")', names(inrasters), inrasters)
   save_exprs = sprintf('%s.save("%s")', names(outrasters), outrasters)
-  # load the input rasters
-  for(e in load_exprs)
+  # load, execute, save
+  for (e in c(load_exprs, expressions, save_exprs))
     PythonInR::pyExec(e)
-  # evaluate the intermediate calculations
-  for(e in expressions)
-    PythonInR::pyExec(e)
-  # save the ouput rasters
-  for(e in save_exprs)
-    PythonInR::pyExec(e)  
   invisible(NULL)
 }
 
