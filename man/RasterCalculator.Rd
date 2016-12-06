@@ -23,4 +23,12 @@ No return value; raster files listed in \code{outrasters}
 \description{
 Perform Raster Calculations with arcpy.sa.
 }
+\details{
+Note that the functions exposes the \code{arcpy.sa} 
+  namespace, rather than importing all function from 
+  \code{arcpy.sa} into the global environment. Therefore, 
+  calls to \code{arcpy.sa} functions in the \code{expressions} 
+  argument must include the namespace, e.g. \code{arcpy.sa.Log10} 
+  rather than simply \code{Log10}.
+}
 

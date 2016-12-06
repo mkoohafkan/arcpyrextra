@@ -53,6 +53,12 @@ RasterCalculator = function(expressions, inrasters = list(), outrasters = list()
 #' @param fields A vector of field names to retreive.
 #' @return a dataframe with columns corresponding to \code{fields}.
 #' 
+#' @details This implementation is generally slower than accessing the
+#'   \code{@data} slot of an object created from \code{rgdal::readOGR}.
+#'   The advantage of \code{get_attrtable} is that it can read 
+#'   raster attribute tables and stand-alone tables stored in file
+#'   file geodatabases, which \code{rgdal::readOGR} cannot.
+#'
 #' @importFrom stats setNames
 #' @importFrom utils capture.output
 #' @export

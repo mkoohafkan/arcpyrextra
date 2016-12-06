@@ -19,4 +19,11 @@ a dataframe with columns corresponding to \code{fields}.
 \description{
 Get the attribute table of a layer or raster with the arcpy.da module.
 }
+\details{
+This implementation is generally slower than accessing the
+  \code{@data} slot of an object created from \code{rgdal::readOGR}.
+  The advantage of \code{get_attrtable} is that it can read 
+  raster attribute tables and stand-alone tables stored in file
+  file geodatabases, which \code{rgdal::readOGR} cannot.
+}
 
