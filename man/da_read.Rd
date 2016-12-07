@@ -7,11 +7,9 @@
 da_read(file, fields)
 }
 \arguments{
+\item{file}{The file path to the table.}
+
 \item{fields}{A vector of field names to retreive.}
-
-\item{layer}{The layer to access.}
-
-\item{path}{The folder or geodatabase containing \code{layer}.}
 }
 \value{
 a dataframe with columns corresponding to \code{fields}.

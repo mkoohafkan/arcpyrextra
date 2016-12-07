@@ -57,8 +57,7 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
 #'
 #' Read a table (e.g. attribute table of a layer) with the arcpy.da module.
 #'
-#' @param layer The layer to access.
-#' @param path The folder or geodatabase containing \code{layer}.
+#' @param file The file path to the table.
 #' @param fields A vector of field names to retreive.
 #' @return a dataframe with columns corresponding to \code{fields}.
 #' 
@@ -79,7 +78,7 @@ da_read = function(file, fields) {
   )
   if(missing(fields))
     fields = PythonInR::pyGet(
-      sprintf('[f.name for f in arcpy.ListFields("%s")]' file)
+      sprintf('[f.name for f in arcpy.ListFields("%s")]', file)
     )
   # convert attribute table to list of rows
   PythonInR::pyExec(sprintf(
@@ -97,7 +96,7 @@ da_read = function(file, fields) {
 }
 
 
-#' Field class formatter for da_* functions
+# Field class formatter for da_* functions
 field_fmt = function(x) {
   if (class(x) == "numeric")
     "%f"
@@ -107,7 +106,7 @@ field_fmt = function(x) {
     "%s"
   }
 
-#' write data frame to Python list for da_* functions
+# write data frame to Python list for da_* functions
 df2ltxt = function(d, fmt){
   paste(lapply(seq(nrow(d)), function(x) 
       do.call(sprintf, c(
@@ -126,8 +125,8 @@ df2ltxt = function(d, fmt){
 #'   of the table to be written to.
 #' @param file The file path to the table.
 #' @param fmt Vector of formats for the columns in \code{d}. If missing,
-#'   the format will be automatically detected as numeric (\code{%f}), 
-#'   integer (\code{%d}), or string (\code{%s}).
+#'   the format will be automatically detected as numeric (\code{\%f}), 
+#'   integer (\code{\%d}), or string (\code{\%s}).
 #' @return The path to \code{file}.
 #' 
 #' @details When \code{update = TRUE}, \code{arcpy.da.updateCursor} is 
@@ -169,8 +168,8 @@ da_update = function(d, file, fmt){
 #'  field names of the table to be written to.
 #' @param file The file path to the table.
 #' @param fmt Vector of formats for the columns in \code{d}. If missing,
-#'   the format will be automatically detected as numeric (\code{%f}), 
-#'   integer (\code{%d}), or string (\code{%s}).
+#'   the format will be automatically detected as numeric (\code{\%f}), 
+#'   integer (\code{\%d}), or string (\code{\%s}).
 #' @return The path to \code{file}.
 #' 
 #' @details When \code{update = TRUE}, \code{arcpy.da.updateCursor} is 
