@@ -57,7 +57,7 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
 #'
 #' Read a table (e.g. attribute table of a layer) with the arcpy.da module.
 #'
-#' @param file The file path to the table.
+#' @param table.path The file path to the table.
 #' @param fields A vector of field names to retreive.
 #' @return a dataframe with columns corresponding to \code{fields}.
 #' 
@@ -65,12 +65,12 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
 #'   \code{@data} slot of an object created from \code{rgdal::readOGR}.
 #'   The advantage of \code{da_read} is that it can read 
 #'   raster attribute tables and stand-alone tables stored in file
-#'   file geodatabases, which \code{rgdal::readOGR} cannot.
+#'   geodatabases, which \code{rgdal::readOGR} cannot.
 #'
 #' @importFrom stats setNames
 #' @importFrom utils capture.output
 #' @export
-da_read = function(file, fields) {
+da_read = function(table.path, fields) {
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
     stop("Could not import arcpy.da.")
   on.exit( 
@@ -78,12 +78,12 @@ da_read = function(file, fields) {
   )
   if(missing(fields))
     fields = PythonInR::pyGet(
-      sprintf('[f.name for f in arcpy.ListFields("%s")]', file)
+      sprintf('[f.name for f in arcpy.ListFields("%s")]', table.path)
     )
   # convert attribute table to list of rows
   PythonInR::pyExec(sprintf(
     'rows = [row for row in arcpy.da.SearchCursor("%s", [%s])]',
-    file, paste(sprintf('"%s"', fields), collapse = ", "))
+    table.path, paste(sprintf('"%s"', fields), collapse = ", "))
   )
   # read from Python into R
   alist = setNames(vector("list", length(fields)), fields)
@@ -120,22 +120,18 @@ df2ltxt = function(d, fmt){
 #' Update a table (e.g. attribute table of a layer) with the 
 #' arcpy.da module.
 #'
-#' @param d The data to write to the table, with the same number of rows
-#'   as the table to be written to. Column names must match field names 
-#'   of the table to be written to.
-#' @param file The file path to the table.
+#' @param table.path The file path to the table.
+#' @param d The data to write to \code{table.path}, with the same number 
+#'   of rows as the table. Column names must match field names 
+#'   of the table.
 #' @param fmt Vector of formats for the columns in \code{d}. If missing,
 #'   the format will be automatically detected as numeric (\code{\%f}), 
 #'   integer (\code{\%d}), or string (\code{\%s}).
-#' @return The path to \code{file}.
-#' 
-#' @details When \code{update = TRUE}, \code{arcpy.da.updateCursor} is 
-#'   used instead of \code{arcpy.da.InsertCursor}. Note that the number
-#'   of rows of \code{d} is not checked prior to updating.
+#' @return The path to the table, i.e. \code{table.path}.
 #'
 #' @importFrom utils capture.output
 #' @export
-da_update = function(d, file, fmt){
+da_update = function(table.path, d, fmt){
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
     stop("Could not import arcpy.da.")
   if (missing(fmt))
@@ -148,14 +144,14 @@ da_update = function(d, file, fmt){
     sprintf("rtable = [%s]", df2ltxt(d, fmt)),
     "i = 0",
     sprintf("with arcpy.da.UpdateCursor('%s', %s) as cursor:", 
-      file, fields),
+      table.path, fields),
     "  for row in cursor:",
     "    cursor.updateRow(rtable[i])",
     "    i = i + 1"
   )
   on.exit = PythonInR::pyExec("del rtable, i")
   PythonInR::pyExec(paste(pytxt, collapse = "\n"))  
-  file
+  table.path
 }
 
 
@@ -164,21 +160,17 @@ da_update = function(d, file, fmt){
 #' Insert rows into a table (e.g. attribute table of a layer) with the 
 #' arcpy.da module.
 #'
-#' @param d The data to write to the table. Column names must match 
-#'  field names of the table to be written to.
-#' @param file The file path to the table.
+#' @param table.path The file path to the table.
+#' @param d The data to write to \code{table.path}. Column names must 
+#'   match field names of the table.
 #' @param fmt Vector of formats for the columns in \code{d}. If missing,
 #'   the format will be automatically detected as numeric (\code{\%f}), 
 #'   integer (\code{\%d}), or string (\code{\%s}).
-#' @return The path to \code{file}.
-#' 
-#' @details When \code{update = TRUE}, \code{arcpy.da.updateCursor} is 
-#'   used instead of \code{arcpy.da.InsertCursor}. Note that the number
-#'   of rows of \code{d} is not checked prior to updating.
+#' @return The path to the table, i.e. \code{table.path}.
 #'
 #' @importFrom utils capture.output
 #' @export
-da_insert = function(d, file, fmt) { 
+da_insert = function(table.path, d, fmt) { 
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
     stop("Could not import arcpy.da.")
   if (missing(fmt))
@@ -189,12 +181,12 @@ da_insert = function(d, file, fmt) {
   pytxt = c(
     sprintf("rtable = [%s]", df2ltxt(d, fmt)),
     sprintf("with arcpy.da.InsertCursor('%s', %s) as cursor:", 
-      file, fields),
+      table.path, fields),
     "  for row in rtable:",
     "    cursor.insertRow(row)"
   )
   on.exit = PythonInR::pyExec("del rtable")
   PythonInR::pyExec(paste(pytxt, collapse = "\n"))  
-  file
+  table.path
 }
 

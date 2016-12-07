@@ -4,28 +4,23 @@
 \alias{da_insert}
 \title{Insert Table with arcpy.da}
 \usage{
-da_insert(d, file, fmt)
+da_insert(table.path, d, fmt)
 }
 \arguments{
-\item{d}{The data to write to the table. Column names must match 
-field names of the table to be written to.}
+\item{table.path}{The file path to the table.}
 
-\item{file}{The file path to the table.}
+\item{d}{The data to write to \code{table.path}. Column names must 
+match field names of the table.}
 
 \item{fmt}{Vector of formats for the columns in \code{d}. If missing,
 the format will be automatically detected as numeric (\code{\%f}), 
 integer (\code{\%d}), or string (\code{\%s}).}
 }
 \value{
-The path to \code{file}.
+The path to the table, i.e. \code{table.path}.
 }
 \description{
 Insert rows into a table (e.g. attribute table of a layer) with the 
 arcpy.da module.
-}
-\details{
-When \code{update = TRUE}, \code{arcpy.da.updateCursor} is 
-  used instead of \code{arcpy.da.InsertCursor}. Note that the number
-  of rows of \code{d} is not checked prior to updating.
 }
 

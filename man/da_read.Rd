@@ -4,10 +4,10 @@
 \alias{da_read}
 \title{Read Table with arcpy.da}
 \usage{
-da_read(file, fields)
+da_read(table.path, fields)
 }
 \arguments{
-\item{file}{The file path to the table.}
+\item{table.path}{The file path to the table.}
 
 \item{fields}{A vector of field names to retreive.}
 }
@@ -22,6 +22,6 @@ This implementation is generally slower than accessing the
   \code{@data} slot of an object created from \code{rgdal::readOGR}.
   The advantage of \code{da_read} is that it can read 
   raster attribute tables and stand-alone tables stored in file
-  file geodatabases, which \code{rgdal::readOGR} cannot.
+  geodatabases, which \code{rgdal::readOGR} cannot.
 }
 
