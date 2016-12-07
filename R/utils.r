@@ -149,7 +149,9 @@ da_update = function(table.path, d, fmt){
     "    cursor.updateRow(rtable[i])",
     "    i = i + 1"
   )
-  on.exit = PythonInR::pyExec("del rtable, i")
+  on.exit(
+    PythonInR::pyExec("del rtable, i")
+  )
   PythonInR::pyExec(paste(pytxt, collapse = "\n"))  
   table.path
 }
@@ -185,7 +187,9 @@ da_insert = function(table.path, d, fmt) {
     "  for row in rtable:",
     "    cursor.insertRow(row)"
   )
-  on.exit = PythonInR::pyExec("del rtable")
+  on.exit(
+    PythonInR::pyExec("del rtable")
+  )
   PythonInR::pyExec(paste(pytxt, collapse = "\n"))  
   table.path
 }
