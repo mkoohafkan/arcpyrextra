@@ -45,7 +45,7 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
         collapse = ", ")))
   )
   load_exprs = sprintf('%s = arcpy.sa.Raster("%s")', names(inrasters), inrasters)
-  calc_exprs = sprintf('%s = %s', names(expressions, expressions))
+  calc_exprs = sprintf('%s = %s', names(expressions), expressions)
   save_exprs = sprintf('%s.save("%s")', names(outrasters), outrasters)
   # load, execute, save
   for (e in c(load_exprs, calc_exprs, save_exprs))
@@ -77,6 +77,10 @@ da_read = function(file, fields) {
   on.exit( 
     PythonInR::pyExec("del rows, val")
   )
+  if(missing(fields))
+    fields = PythonInR::pyGet(
+      sprintf('[f.name for f in arcpy.ListFields("%s")]' file)
+    )
   # convert attribute table to list of rows
   PythonInR::pyExec(sprintf(
     'rows = [row for row in arcpy.da.SearchCursor("%s", [%s])]',
@@ -93,26 +97,37 @@ da_read = function(file, fields) {
 }
 
 
-#' Field class formatter for da_read and da_write
+#' Field class formatter for da_* functions
 field_fmt = function(x) {
   if (class(x) == "numeric")
     "%f"
   else if (class(x) == "integer")
     "%d"
   else
-    "'%s'"
+    "%s"
   }
 
-#' Write/Update Table with arcpy.da
+#' write data frame to Python list for da_* functions
+df2ltxt = function(d, fmt){
+  paste(lapply(seq(nrow(d)), function(x) 
+      do.call(sprintf, c(
+        fmt = sprintf("[%s]", paste(fmt, collapse = ", ")), 
+        as.list(d[x,])))), 
+    collapse = ",\n  ")
+}
+
+#' Update Table with arcpy.da
 #'
-#' Write or update a table (e.g. attribute table of a layer) with the 
+#' Update a table (e.g. attribute table of a layer) with the 
 #' arcpy.da module.
 #'
-#' @param d The data to write to the table.
+#' @param d The data to write to the table, with the same number of rows
+#'   as the table to be written to. Column names must match field names 
+#'   of the table to be written to.
 #' @param file The file path to the table.
-#' @param fmt The format string to use to write values from columns in
-#'   \code{d}.
-#' @param update If TRUE, update the table. If FALSE, add new rows to the table.
+#' @param fmt Vector of formats for the columns in \code{d}. If missing,
+#'   the format will be automatically detected as numeric (\code{%f}), 
+#'   integer (\code{%d}), or string (\code{%s}).
 #' @return The path to \code{file}.
 #' 
 #' @details When \code{update = TRUE}, \code{arcpy.da.updateCursor} is 
@@ -121,30 +136,66 @@ field_fmt = function(x) {
 #'
 #' @importFrom utils capture.output
 #' @export
-da_write = function(d, file, fmt, update = FALSE) { 
+da_update = function(d, file, fmt){
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
     stop("Could not import arcpy.da.")
-  # make write template
-  fields = sprintf("[%s]", paste(sprintf("'%s'", names(d)), collapse = ", "))
   if (missing(fmt))
-    fmt = paste(lapply(names(d), function(x) field_fmt(d[[x]])), 
-      collapse = ", ")
-  if (update)
-    stemplate = paste0("cursor.updateRow(", fmt, ")")
-  else
-    stemplate = paste0("cursor.insertRow(", fmt, ")")
-  # open the table
-  if (update)
-    PythonInR::pyExec(sprintf("cursor = arcpy.da.updateCursor('%s', %s)",
-      file, fields))
-  else
-    PythonInR::pyExec(sprintf("cursor = arcpy.da.InsertCursor('%s', %s)",
-      file, fields))
-  on.exit(PythonInR::pyExec("del cursor"))
-  # write to the table
-  for (i in seq(nrow(d)))
-    PythonInR::pyExec(
-      do.call(sprintf, c(fmt = stemplate, as.list(d[i,]) ))
-    )
+    fmt = lapply(names(d), function(x) field_fmt(d[[x]]))
+  fmt = gsub("\\%s", "'\\%s'", fmt)
+  fields = sprintf("[%s]", 
+    paste(sprintf("'%s'", names(d)), collapse = ", "))
+  # write d as python list  
+  pytxt = c(
+    sprintf("rtable = [%s]", df2ltxt(d, fmt)),
+    "i = 0",
+    sprintf("with arcpy.da.UpdateCursor('%s', %s) as cursor:", 
+      file, fields),
+    "  for row in cursor:",
+    "    cursor.updateRow(rtable[i])",
+    "    i = i + 1"
+  )
+  on.exit = PythonInR::pyExec("del rtable, i")
+  PythonInR::pyExec(paste(pytxt, collapse = "\n"))  
   file
 }
+
+
+#' Insert Table with arcpy.da
+#'
+#' Insert rows into a table (e.g. attribute table of a layer) with the 
+#' arcpy.da module.
+#'
+#' @param d The data to write to the table. Column names must match 
+#'  field names of the table to be written to.
+#' @param file The file path to the table.
+#' @param fmt Vector of formats for the columns in \code{d}. If missing,
+#'   the format will be automatically detected as numeric (\code{%f}), 
+#'   integer (\code{%d}), or string (\code{%s}).
+#' @return The path to \code{file}.
+#' 
+#' @details When \code{update = TRUE}, \code{arcpy.da.updateCursor} is 
+#'   used instead of \code{arcpy.da.InsertCursor}. Note that the number
+#'   of rows of \code{d} is not checked prior to updating.
+#'
+#' @importFrom utils capture.output
+#' @export
+da_insert = function(d, file, fmt) { 
+  if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
+    stop("Could not import arcpy.da.")
+  if (missing(fmt))
+    fmt = lapply(names(d), function(x) field_fmt(d[[x]]))
+  fmt = gsub("\\%s", "'\\%s'", fmt)
+  fields = sprintf("[%s]", 
+    paste(sprintf("'%s'", names(d)), collapse = ", "))
+  pytxt = c(
+    sprintf("rtable = [%s]", df2ltxt(d, fmt)),
+    sprintf("with arcpy.da.InsertCursor('%s', %s) as cursor:", 
+      file, fields),
+    "  for row in rtable:",
+    "    cursor.insertRow(row)"
+  )
+  on.exit = PythonInR::pyExec("del rtable")
+  PythonInR::pyExec(paste(pytxt, collapse = "\n"))  
+  file
+}
+
