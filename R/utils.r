@@ -41,7 +41,7 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
     stop("Could not import arcpy.sa.")
   on.exit(
     PythonInR::pyExec(sprintf("del %s",
-      paste(unique(names(c(load_exprs, expressions, save_exprs))),
+      paste(unique(names(c(inrasters, expressions, outrasters))),
         collapse = ", ")))
   )
   load_exprs = sprintf('%s = arcpy.sa.Raster("%s")', names(inrasters), inrasters)
