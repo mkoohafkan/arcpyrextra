@@ -16,17 +16,19 @@ NULL
 #' @param expressions A named list of raster calculation expressions to 
 #'   be executed in sequence. The names must be valid python object 
 #'   names.
-#' @param inrasters A named list of file paths to Rasters used in the 
-#'   calculation expressions, to be converted to ArcPy raster objects. 
-#'   The names must be valid python object names.
-#' @param outrasters A named list of file paths to save Rasters 
-#'   resulting the calculation expressions. The names must be valid 
-#'   python object names.
+#' @param inrasters A named list of file paths to rasters to be loaded
+#'   prior to performing the calculations listed in \code{expressions}.
+#'   The names must be valid python object names. Raster objects will 
+#'   be created via \code{arcpy.sa.Raster()}.
+#' @param outrasters A named list of file paths to save rasters 
+#'   resulting from the calculations in \code{expressions}. The names 
+#'   must be valid python object names. Rasters will be saved via
+#'   \code{<raster object>.save()}
 #' @return No return value; raster files listed in \code{outrasters} 
 #'   will be saved.
 #'
-#' @details Note that the functions exposes the \code{arcpy.sa} 
-#'   namespace, rather than importing all function from 
+#' @details Note that this function exposes the \code{arcpy.sa} 
+#'   namespace, rather than importing all functions from 
 #'   \code{arcpy.sa} into the global environment. Therefore, 
 #'   calls to \code{arcpy.sa} functions in the \code{expressions} 
 #'   argument must include the namespace, e.g. \code{arcpy.sa.Log10} 
@@ -39,11 +41,13 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
     stop("extension 'Spatial' is not available.", call. = FALSE)
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.sa'), silent = TRUE))) > 0)
     stop("Could not import arcpy.sa.")
-  on.exit(
+  on.exit({
+    lapply(sprintf("arcpy.Delete_management(%s)", names(expressions)),
+      PythonInR::pyExec)
     PythonInR::pyExec(sprintf("del %s",
       paste(unique(names(c(inrasters, expressions, outrasters))),
         collapse = ", ")))
-  )
+  })
   load_exprs = sprintf('%s = arcpy.sa.Raster("%s")', names(inrasters), inrasters)
   calc_exprs = sprintf('%s = %s', names(expressions), expressions)
   save_exprs = sprintf('%s.save("%s")', names(outrasters), outrasters)
