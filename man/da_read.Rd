@@ -24,4 +24,12 @@ This implementation is generally slower than accessing the
   raster attribute tables and stand-alone tables stored in file
   geodatabases, which \code{rgdal::readOGR} cannot.
 }
+\examples{
+\dontrun{
+layer = "path/to/table"
+fields = c("VALUE", "NOTE")
+da_read(layer, fields)
+}
+
+}
 

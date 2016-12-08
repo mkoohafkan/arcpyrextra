@@ -7,7 +7,7 @@ Author: Michael C Koohafkan [aut, cre]
 Maintainer: Michael C Koohafkan <michael.koohafkan@gmail.com>
 Description: Extends the functionality of \code{arcpyr}. Provides some 
     additional interfaces to working with arcpy from R, including 
-    support for raster calculations and reading attribute tables.
+    support for raster calculations and working with attribute tables.
 URL: https://github.com/mkoohafkan/arcpyrextra
 BugReports: https://github.com/mkoohafkan/arcpyrextra/issues
 License: GPL (>= 3)

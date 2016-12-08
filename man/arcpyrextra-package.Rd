@@ -8,6 +8,6 @@
 \description{
 Extends the functionality of \code{arcpyr}. Provides some additional
 interfaces to working with arcpy from R, including support for
-raster calculations and reading attribute tables.
+raster calculations and working with attribute tables.
 }
 

@@ -23,4 +23,25 @@ The path to the table, i.e. \code{table.path}.
 Insert rows into a table (e.g. attribute table of a layer) with the 
 arcpy.da module.
 }
+\examples{
+\dontrun{
+# create an empty table
+library(arcpyr)
+connect_ArcPython()
+arcpy = arcpy_env(NULL, NULL)
+attach_toolbox(arcpy, "management")
+folder = "path/to/folder"
+name = "table name"
+arcpy$management$CreateTable(folder, name)
+# create fields in new table
+arcpy$management$AddField(file.path(folder, name), "ID", "SHORT")
+arcpy$management$AddField(file.path(folder, name), "VALUE", "FLOAT")
+arcpy$CreateTable_management(outpath, tablename)
+# generate table contents in R
+d = data.frame(ID = seq(10), VALUE = rnorm(10))
+# write data to table
+da_insert(file.path(folder, name), d)
+}
+
+}
 

@@ -24,4 +24,16 @@ The path to the table, i.e. \code{table.path}.
 Update a table (e.g. attribute table of a layer) with the 
 arcpy.da module.
 }
+\examples{
+\dontrun{
+layer = "path/to/table"
+fields = c("VALUE", "NOTE")
+field.formats = c("\%f", "\%s")
+d = da_read(layer, fields)
+d["VALUE"] = d$VALUE + 5
+d["NOTE"] = "modified"
+da_update(layer, d, field.formats)
+}
+
+}
 

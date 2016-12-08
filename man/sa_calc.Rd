@@ -11,13 +11,15 @@ sa_calc(expressions, inrasters = list(), outrasters = list())
 be executed in sequence. The names must be valid python object 
 names.}
 
-\item{inrasters}{A named list of file paths to Rasters used in the 
-calculation expressions, to be converted to ArcPy raster objects. 
-The names must be valid python object names.}
+\item{inrasters}{A named list of file paths to rasters to be loaded
+prior to performing the calculations listed in \code{expressions}.
+The names must be valid python object names. Raster objects will 
+be created via \code{arcpy.sa.Raster()}.}
 
-\item{outrasters}{A named list of file paths to save Rasters 
-resulting the calculation expressions. The names must be valid 
-python object names.}
+\item{outrasters}{A named list of file paths to save rasters 
+resulting from the calculations in \code{expressions}. The names 
+must be valid python object names. Rasters will be saved via
+\code{<raster object>.save()}}
 }
 \value{
 No return value; raster files listed in \code{outrasters} 
@@ -27,11 +29,24 @@ No return value; raster files listed in \code{outrasters}
 Perform Raster Calculations with arcpy.sa.
 }
 \details{
-Note that the functions exposes the \code{arcpy.sa} 
-  namespace, rather than importing all function from 
+Note that this function exposes the \code{arcpy.sa} 
+  namespace, rather than importing all functions from 
   \code{arcpy.sa} into the global environment. Therefore, 
   calls to \code{arcpy.sa} functions in the \code{expressions} 
   argument must include the namespace, e.g. \code{arcpy.sa.Log10} 
   rather than simply \code{Log10}.
+}
+\examples{
+\dontrun{ 
+input.rasters = list(inras = "path/to/input/raster")
+temp.rasters = list(
+  firstras = "inras > 5",
+  secondras = "arcpy.sa.Power(firstras, 2)",
+  thirdras = "arcpy.sa.Log10(secondras)"
+)
+output.rasters = list(thirdras = "path/to/output/raster")
+sa_calc(temp.rasters, input.rasters, output.rasters) 
+}
+
 }
 

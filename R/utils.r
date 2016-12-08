@@ -2,7 +2,7 @@
 #'
 #' Extends the functionality of \code{arcpyr}. Provides some additional
 #' interfaces to working with arcpy from R, including support for
-#' raster calculations and reading attribute tables.
+#' raster calculations and working with attribute tables.
 #'
 #' @name arcpyrextra-package
 #' @aliases arcpyrextra
@@ -33,6 +33,18 @@ NULL
 #'   calls to \code{arcpy.sa} functions in the \code{expressions} 
 #'   argument must include the namespace, e.g. \code{arcpy.sa.Log10} 
 #'   rather than simply \code{Log10}.
+#'
+#' @examples
+#' \dontrun{ 
+#' input.rasters = list(inras = "path/to/input/raster")
+#' temp.rasters = list(
+#'   firstras = "inras > 5",
+#'   secondras = "arcpy.sa.Power(firstras, 2)",
+#'   thirdras = "arcpy.sa.Log10(secondras)"
+#' )
+#' output.rasters = list(thirdras = "path/to/output/raster")
+#' sa_calc(temp.rasters, input.rasters, output.rasters) 
+#' }
 #'
 #' @importFrom utils capture.output
 #' @export
@@ -70,6 +82,13 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
 #'   The advantage of \code{da_read} is that it can read 
 #'   raster attribute tables and stand-alone tables stored in file
 #'   geodatabases, which \code{rgdal::readOGR} cannot.
+#'
+#' @examples
+#' \dontrun{
+#' layer = "path/to/table"
+#' fields = c("VALUE", "NOTE")
+#' da_read(layer, fields)
+#' }
 #'
 #' @importFrom stats setNames
 #' @importFrom utils capture.output
@@ -133,6 +152,17 @@ df2ltxt = function(d, fmt){
 #'   integer (\code{\%d}), or string (\code{\%s}).
 #' @return The path to the table, i.e. \code{table.path}.
 #'
+#' @examples
+#' \dontrun{
+#' layer = "path/to/table"
+#' fields = c("VALUE", "NOTE")
+#' field.formats = c("%f", "%s")
+#' d = da_read(layer, fields)
+#' d["VALUE"] = d$VALUE + 5
+#' d["NOTE"] = "modified"
+#' da_update(layer, d, field.formats)
+#' }
+#'
 #' @importFrom utils capture.output
 #' @export
 da_update = function(table.path, d, fmt){
@@ -174,6 +204,26 @@ da_update = function(table.path, d, fmt){
 #'   integer (\code{\%d}), or string (\code{\%s}).
 #' @return The path to the table, i.e. \code{table.path}.
 #'
+#' @examples
+#' \dontrun{
+#' # create an empty table
+#' library(arcpyr)
+#' connect_ArcPython()
+#' arcpy = arcpy_env(NULL, NULL)
+#' attach_toolbox(arcpy, "management")
+#' folder = "path/to/folder"
+#' name = "table name"
+#' arcpy$management$CreateTable(folder, name)
+#' # create fields in new table
+#' arcpy$management$AddField(file.path(folder, name), "ID", "SHORT")
+#' arcpy$management$AddField(file.path(folder, name), "VALUE", "FLOAT")
+#' arcpy$CreateTable_management(outpath, tablename)
+#' # generate table contents in R
+#' d = data.frame(ID = seq(10), VALUE = rnorm(10))
+#' # write data to table
+#' da_insert(file.path(folder, name), d)
+#' }
+#'
 #' @importFrom utils capture.output
 #' @export
 da_insert = function(table.path, d, fmt) { 
@@ -197,4 +247,3 @@ da_insert = function(table.path, d, fmt) {
   PythonInR::pyExec(paste(pytxt, collapse = "\n"))  
   table.path
 }
-
