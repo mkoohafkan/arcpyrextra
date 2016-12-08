@@ -14,7 +14,8 @@ match field names of the table.}
 
 \item{fmt}{Vector of formats for the columns in \code{d}. If missing,
 the format will be automatically detected as numeric (\code{\%f}), 
-integer (\code{\%d}), or string (\code{\%s}).}
+integer (\code{\%d}), or string (\code{\%s}). See \code{sprintf}
+for more information on format strings.}
 }
 \value{
 The path to the table, i.e. \code{table.path}.
@@ -43,5 +44,8 @@ d = data.frame(ID = seq(10), VALUE = rnorm(10))
 da_insert(file.path(folder, name), d)
 }
 
+}
+\seealso{
+\code{\link{sprintf}}
 }
 

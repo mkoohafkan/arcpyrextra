@@ -15,7 +15,8 @@ of the table.}
 
 \item{fmt}{Vector of formats for the columns in \code{d}. If missing,
 the format will be automatically detected as numeric (\code{\%f}), 
-integer (\code{\%d}), or string (\code{\%s}).}
+integer (\code{\%d}), or string (\code{\%s}). See \code{sprintf}
+for more information on format strings.}
 }
 \value{
 The path to the table, i.e. \code{table.path}.
@@ -35,5 +36,8 @@ d["NOTE"] = "modified"
 da_update(layer, d, field.formats)
 }
 
+}
+\seealso{
+\code{\link{sprintf}}
 }
 

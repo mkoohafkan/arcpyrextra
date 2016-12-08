@@ -149,7 +149,8 @@ df2ltxt = function(d, fmt){
 #'   of the table.
 #' @param fmt Vector of formats for the columns in \code{d}. If missing,
 #'   the format will be automatically detected as numeric (\code{\%f}), 
-#'   integer (\code{\%d}), or string (\code{\%s}).
+#'   integer (\code{\%d}), or string (\code{\%s}). See \code{sprintf}
+#'   for more information on format strings.
 #' @return The path to the table, i.e. \code{table.path}.
 #'
 #' @examples
@@ -162,6 +163,8 @@ df2ltxt = function(d, fmt){
 #' d["NOTE"] = "modified"
 #' da_update(layer, d, field.formats)
 #' }
+#'
+#' @seealso \code{\link{sprintf}}
 #'
 #' @importFrom utils capture.output
 #' @export
@@ -201,7 +204,8 @@ da_update = function(table.path, d, fmt){
 #'   match field names of the table.
 #' @param fmt Vector of formats for the columns in \code{d}. If missing,
 #'   the format will be automatically detected as numeric (\code{\%f}), 
-#'   integer (\code{\%d}), or string (\code{\%s}).
+#'   integer (\code{\%d}), or string (\code{\%s}). See \code{sprintf}
+#'   for more information on format strings.
 #' @return The path to the table, i.e. \code{table.path}.
 #'
 #' @examples
@@ -223,6 +227,8 @@ da_update = function(table.path, d, fmt){
 #' # write data to table
 #' da_insert(file.path(folder, name), d)
 #' }
+#'
+#' @seealso \code{\link{sprintf}}
 #'
 #' @importFrom utils capture.output
 #' @export
