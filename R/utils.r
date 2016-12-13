@@ -54,7 +54,8 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.sa'), silent = TRUE))) > 0)
     stop("Could not import arcpy.sa.")
   on.exit({
-    lapply(sprintf("arcpy.Delete_management(%s)", names(expressions)),
+    it = !(names(expressions) %in% names(outrasters))
+    lapply(sprintf("arcpy.Delete_management(%s)", names(expressions)[it]),
       PythonInR::pyExec)
     PythonInR::pyExec(sprintf("del %s",
       paste(unique(names(c(inrasters, expressions, outrasters))),
