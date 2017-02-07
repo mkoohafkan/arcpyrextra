@@ -75,14 +75,15 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
 #' Read a table (e.g. attribute table of a layer) with the arcpy.da module.
 #'
 #' @param table.path The file path to the table.
-#' @param fields A vector of field names to retreive.
+#' @param fields A vector of field names or column indices to retrieve.
 #' @return a dataframe with columns corresponding to \code{fields}.
 #' 
-#' @details This implementation is generally slower than accessing the
-#'   \code{@data} slot of an object created from \code{rgdal::readOGR}.
-#'   The advantage of \code{da_read} is that it can read 
+#' @details This implementation may be faster than accessing the
+#'   \code{@data} slot of an object created from \code{rgdal::readOGR}
+#'   in cases where there are a very large number of features. An 
+#'   additional advantage of \code{da_read} is that it can read 
 #'   raster attribute tables and stand-alone tables stored in file
-#'   geodatabases, which \code{rgdal::readOGR} cannot.
+#'   geodatabases, which is not supported by \code{rgdal::readOGR}.
 #'
 #' @examples
 #' \dontrun{
@@ -100,10 +101,10 @@ da_read = function(table.path, fields) {
   on.exit( 
     PythonInR::pyExec("del rows, val")
   )
-  if(missing(fields))
-    fields = PythonInR::pyGet(
-      sprintf('[f.name for f in arcpy.ListFields("%s")]', table.path)
-    )
+  if (missing(fields))
+    fields = da_fields(table.path)
+  if (is.numeric(fields))
+    fields = da_fields(table.path)[fields]
   # convert attribute table to list of rows
   PythonInR::pyExec(sprintf(
     'rows = [row for row in arcpy.da.SearchCursor("%s", [%s])]',
@@ -194,7 +195,6 @@ da_update = function(table.path, d, fmt){
   table.path
 }
 
-
 #' Insert Table with arcpy.da
 #'
 #' Insert rows into a table (e.g. attribute table of a layer) with the 
@@ -253,4 +253,23 @@ da_insert = function(table.path, d, fmt) {
   )
   PythonInR::pyExec(paste(pytxt, collapse = "\n"))  
   table.path
+}
+
+
+#' List Attribute Table Fields
+#'
+#' Read attribute table field names with arcpy.da module.
+#'
+#' @param table.path The file path to the table.
+#' @return A vector of field names.
+#'
+#' @importFrom utils capture.output
+#' @export
+da_fields = function(table.path) {
+  if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
+    stop("Could not import arcpy.da.")
+  fields = PythonInR::pyGet(
+    sprintf('[f.name for f in arcpy.ListFields("%s")]', table.path)
+  )
+  fields
 }

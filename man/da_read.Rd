@@ -9,7 +9,7 @@ da_read(table.path, fields)
 \arguments{
 \item{table.path}{The file path to the table.}
 
-\item{fields}{A vector of field names to retreive.}
+\item{fields}{A vector of field names or column indices to retrieve.}
 }
 \value{
 a dataframe with columns corresponding to \code{fields}.
@@ -18,11 +18,12 @@ a dataframe with columns corresponding to \code{fields}.
 Read a table (e.g. attribute table of a layer) with the arcpy.da module.
 }
 \details{
-This implementation is generally slower than accessing the
-  \code{@data} slot of an object created from \code{rgdal::readOGR}.
-  The advantage of \code{da_read} is that it can read 
+This implementation may be faster than accessing the
+  \code{@data} slot of an object created from \code{rgdal::readOGR}
+  in cases where there are a very large number of features. An 
+  additional advantage of \code{da_read} is that it can read 
   raster attribute tables and stand-alone tables stored in file
-  geodatabases, which \code{rgdal::readOGR} cannot.
+  geodatabases, which is not supported by \code{rgdal::readOGR}.
 }
 \examples{
 \dontrun{
