@@ -98,7 +98,10 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
 da_read = function(table.path, fields) {
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
     stop("Could not import arcpy.da.")
-  on.exit( 
+  # initialize to avoid error on exit
+  PythonInR::pyExec("rows = None; val = None")
+  pySet("rows", "None")
+  on.exit(
     PythonInR::pyExec("del rows, val")
   )
   if (missing(fields))
@@ -110,12 +113,13 @@ da_read = function(table.path, fields) {
     'rows = [row for row in arcpy.da.SearchCursor("%s", [%s])]',
     table.path, paste(sprintf('"%s"', fields), collapse = ", "))
   )
-  # read from Python into R
-  alist = setNames(vector("list", length(fields)), fields)
+  # return NULL if table is empty
   if (PythonInR::pyGet("len(rows)") < 1) {
     warning("Table is empty. Returning NULL.")
     return(NULL)
   }
+  # read from Python into R
+  alist = setNames(vector("list", length(fields)), fields)
   for (i in seq_along(fields)) {
     PythonInR::pyExec(sprintf("val = [row[%d] for row in rows]", i - 1))
     alist[[i]] = PythonInR::pyGet("val")
