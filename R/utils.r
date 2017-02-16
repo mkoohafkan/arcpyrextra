@@ -112,9 +112,19 @@ da_read = function(table.path, fields) {
   )
   # read from Python into R
   alist = setNames(vector("list", length(fields)), fields)
+  if (PythonInR::pyGet("len(rows)") < 1) {
+    warning("Table is empty. Returning NULL.")
+    return(NULL)
+  }
   for (i in seq_along(fields)) {
     PythonInR::pyExec(sprintf("val = [row[%d] for row in rows]", i - 1))
     alist[[i]] = PythonInR::pyGet("val")
+  }
+  dropcols = which(sapply(alist, function(x) class(x) == "list"))
+  if (length(dropcols) > 0) {
+    warning("The following fields could not be imported: ",
+      paste(sprintf("'%s'", names(dropcols)), collapse = ", "), ".")
+    alist = alist[-dropcols]
   }
   # output as data.frame
   as.data.frame(alist, stringsAsFactors = FALSE)
