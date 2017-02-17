@@ -100,7 +100,6 @@ da_read = function(table.path, fields) {
     stop("Could not import arcpy.da.")
   # initialize to avoid error on exit
   PythonInR::pyExec("rows = None; val = None")
-  pySet("rows", "None")
   on.exit(
     PythonInR::pyExec("del rows, val")
   )
