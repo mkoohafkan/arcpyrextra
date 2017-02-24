@@ -50,9 +50,9 @@ NULL
 #' @export
 sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
   if (PythonInR::pyGet('arcpy.CheckOutExtension("Spatial")') != "CheckedOut")
-    stop("extension 'Spatial' is not available.", call. = FALSE)
+    stop("extension 'Spatial' is not available", call. = FALSE)
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.sa'), silent = TRUE))) > 0)
-    stop("Could not import arcpy.sa.")
+    stop("Could not import arcpy.sa")
   on.exit({
     it = !(names(expressions) %in% c(names(inrasters), names(outrasters)))
     lapply(sprintf("arcpy.Delete_management(%s)", names(expressions)[it]),
@@ -97,7 +97,7 @@ sa_calc = function(expressions, inrasters = list(), outrasters = list()) {
 #' @export
 da_read = function(table.path, fields) {
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
-    stop("Could not import arcpy.da.")
+    stop("Could not import arcpy.da")
   # initialize to avoid error on exit
   PythonInR::pyExec("rows = None; val = None")
   on.exit(
@@ -107,6 +107,7 @@ da_read = function(table.path, fields) {
     fields = da_fields(table.path)
   if (is.numeric(fields))
     fields = da_fields(table.path)[fields]
+  fields_exist(table.path, fields)
   # convert attribute table to list of rows
   PythonInR::pyExec(sprintf(
     'rows = [row for row in arcpy.da.SearchCursor("%s", [%s])]',
@@ -126,7 +127,7 @@ da_read = function(table.path, fields) {
   dropcols = which(sapply(alist, function(x) class(x) == "list"))
   if (length(dropcols) > 0) {
     warning("The following fields could not be imported: ",
-      paste(sprintf("'%s'", names(dropcols)), collapse = ", "), ".")
+      paste(sprintf("'%s'", names(dropcols)), collapse = ", "))
     alist = alist[-dropcols]
   }
   # output as data.frame
@@ -134,7 +135,13 @@ da_read = function(table.path, fields) {
 }
 
 
-# Field class formatter for da_* functions
+#- Field class formatter for da_* functions
+#-
+#- Format R classes values for use with \code{sprintf}.
+#-
+#- @param x A vector of values.
+#- @return The string format code.
+#-
 field_fmt = function(x) {
   if (class(x) == "numeric")
     "%f"
@@ -144,8 +151,16 @@ field_fmt = function(x) {
     "%s"
   }
 
-# write data frame to Python list for da_* functions
-df2ltxt = function(d, fmt){
+#- Data Frame To Text
+#-
+#- Write data frame to Python list for da_* functions.
+#-
+#- @param d The data frame.
+#- @param fmt A vector specifying the format codes for each column.
+#- @return The data frame as text, to be pasted into Python to generate
+#-   a list structure.
+#-
+df2ltxt = function(d, fmt) {
   paste(lapply(seq(nrow(d)), function(x) 
       do.call(sprintf, c(
         fmt = sprintf("[%s]", paste(fmt, collapse = ", ")), 
@@ -185,7 +200,8 @@ df2ltxt = function(d, fmt){
 #' @export
 da_update = function(table.path, d, fmt){
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
-    stop("Could not import arcpy.da.")
+    stop("Could not import arcpy.da")
+  fields_exist(table.path, names(d))
   if (missing(fmt))
     fmt = lapply(names(d), function(x) field_fmt(d[[x]]))
   fmt = gsub("\\%s", "'\\%s'", fmt)
@@ -248,7 +264,8 @@ da_update = function(table.path, d, fmt){
 #' @export
 da_insert = function(table.path, d, fmt) { 
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
-    stop("Could not import arcpy.da.")
+    stop("Could not import arcpy.da")
+  fields_exist(table.path, names(d))
   if (missing(fmt))
     fmt = lapply(names(d), function(x) field_fmt(d[[x]]))
   fmt = gsub("\\%s", "'\\%s'", fmt)
@@ -280,9 +297,27 @@ da_insert = function(table.path, d, fmt) {
 #' @export
 da_fields = function(table.path) {
   if (length(capture.output(try(PythonInR::pyExecp('import arcpy.da'), silent = TRUE))) > 0)
-    stop("Could not import arcpy.da.")
+    stop("Could not import arcpy.da")
   fields = PythonInR::pyGet(
     sprintf('[f.name for f in arcpy.ListFields("%s")]', table.path)
   )
   fields
+}
+
+#- Fields Exist
+#-
+#- Check if specified fields are present in a table.
+#-
+#- @param table.path The file path to the table.
+#- @param fields The field names.
+#- @return No return value; will produce an error if any of the 
+#-   specified fields are not present in the table.
+#-
+fields_exist = function(table.path, fields) {
+  actual = da_fields(table.path)
+  res = fields %in% actual
+  if (!all(res))
+    stop("Specified fields do not exist in table: ", 
+      paste(fields[!res], sep = ", "), call. = FALSE)
+  invisible(NULL)
 }
