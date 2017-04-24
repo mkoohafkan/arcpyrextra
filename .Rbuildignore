@@ -9,3 +9,5 @@ README.md
 .rproj
 .rxproj
 .sln
+^.*\.Rproj$
+^\.Rproj\.user$
