@@ -4,9 +4,9 @@ This package, and the base package
 [arcpyr](https://github.com/mkoohafkan/arcpyr) that
 it extends, is now
 deprecated. Development has transitioned to a new package 
-`[arcpy](https://github.com/mkoohafkan/arcpy)`, 
+[arcpy](https://github.com/mkoohafkan/arcpy), 
 which uses 
-`[reticulate](https://cran.r-project.org/package=reticulate)` 
+[reticulate](https://cran.r-project.org/package=reticulate)
 for the Python-R
 bridge. `arcpy` supports all the functionality of `arcpyr`
 without the need for the additional wrapper functions that
